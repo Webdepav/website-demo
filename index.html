@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Attendance Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="scripts.js?v=3.0" defer></script>
+    <style>
+        /* Global Styles */
+        body {
+            animation: backgroundRotation 30s infinite linear;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+        
+        @keyframes backgroundRotation {
+            0% { background-image: url('anton-murygin-jD7WYFNJ-0s-unsplash.jpg'); }
+            33% { background-image: url('arturo-rey-CgVqj1l-u44-unsplash.jpg'); }
+            66% { background-image: url('aubrey-odom-bzbWIxsN3iQ-unsplash.jpg'); }
+            100% { background-image: url('anton-murygin-jD7WYFNJ-0s-unsplash.jpg'); }
+        }
+
+        /* Common Container Styles */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            padding: 10px;
+            border-bottom: 2px solid #007bff;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        /* Count Display Styles - Improved contrast */
+        .count-display {
+            background: linear-gradient(135deg, white, white);
+            color: black;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .count-display:hover {
+            transform: translateY(-5px);
+        }
+
+        .count-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+            margin: 10px 0;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(250, 250, 250, 0.8);
+            transition: all 0.2s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Button Styles */
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px;
+            transition: all 0.3s;
+            margin: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:focus {
+            outline: 3px solid #80bdff;
+            outline-offset: 2px;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .primary-btn {
+            background-color: #28a745;
+        }
+
+        .primary-btn:hover {
+            background-color: #218838;
+        }
+
+        .danger-btn {
+            background-color: #dc3545;
+        }
+
+        .danger-btn:hover {
+            background-color: #c82333;
+        }
+
+        .warning-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .warning-btn:hover {
+            background-color: #e0a800;
+        }
+
+        /* Form Styles */
+        input, select {
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+            transform: scale(0.95);
+            opacity: 0;
+            animation: messageAppear 0.3s forwards;
+        }
+
+        @keyframes messageAppear {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        /* Date Selector */
+        .date-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* QR Scanner */
+        .qr-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        #qr-scanner {
+            margin: 0 auto;
+            max-width: 60%;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Admin Dashboard */
+        .dashboard-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .panel-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .panel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        /* QR Code Generator */
+        .qr-codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .qr-item {
+            text-align: center;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .qr-item:hover {
+            transform: scale(1.05);
+        }
+
+        .qr-item img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            background-color: #343a40;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.5s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .dashboard-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        /* Tab Navigation for Admin Dashboard */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            margin: 0;
+            box-shadow: none;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 15px 0;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Animation */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            position: relative;
+            display: none;
+        }
+
+        .success-checkmark .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4CAF50;
+        }
+
+        .success-checkmark .check-icon::before {
+            top: 43px;
+            left: 19px;
+            transform: rotate(45deg);
+            width: 20px;
+            height: 3px;
+        }
+
+        .success-checkmark .check-icon::after {
+            top: 37px;
+            left: 25px;
+            transform: rotate(135deg);
+            width: 38px;
+            height: 3px;
+        }
+
+        .success-checkmark .check-icon::before,
+        .success-checkmark .check-icon::after {
+            content: '';
+            position: absolute;
+            background-color: #4CAF50;
+            border-radius: 2px;
+        }
+
+        .animated-check {
+            animation: scale-up 0.3s, check-first 0.3s 0.3s, check-second 0.3s 0.6s;
+        }
+
+        @keyframes scale-up {
+            0% { transform: scale(0.3); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes check-first {
+            0% { width: 0; }
+            100% { width: 20px; }
+        }
+
+        @keyframes check-second {
+            0% { width: 0; }
+            100% { width: 38px; }
+        }
+
+        /* Chart Styles */
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* User Profile Styles */
+        .user-profile {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .profile-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #007bff;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h3 {
+            margin-top: 0;
+        }
+
+        .dietary-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .dietary-tag {
+            padding: 5px 10px;
+            border-radius: 20px;
+            background-color: #e9ecef;
+            font-size: 0.8em;
+        }
+
+        /* User Management Table */
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .user-table th, .user-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .user-table th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+        
+        /* Swipe area for mobile navigation */
+        .swipe-area {
+            width: 100%;
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            margin: 10px auto;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .swipe-area {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- User Page: Staff Meal Registration -->
+    <div class="container" id="staffContainer" style="display: none;">
+        <header>
+            <img src="uac.png" alt="Company Logo" class="logo"> 
+            <h1>Meal Attendance Tracker</h1>
+            <p>Scan your Staff ID Card to register your meal.</p>
+        </header>
+
+        <!-- Attendance Info -->
+        <div class="section">
+            <div class="count-display" role="region" aria-label="Attendance statistics">
+                <p>Total Meals Recorded Today</p>
+                <span class="count-number" id="staffAttendanceCount">0</span>
+                <p><strong>Date:</strong> <span id="registrationDate"></span></p>
+            </div>
+            <p><strong>Current Time:</strong> <span id="currentTime"></span></p>
+        </div>
+
+        <!-- Profile Info (if logged in with user credentials) -->
+        <div class="section user-profile-section" style="display: none;">
+            <div class="user-profile">
+                <img src="/api/placeholder/100/100" alt="User profile photo" class="profile-photo" id="userProfilePhoto">
+                <div class="profile-info">
+                    <h3 id="userProfileName">User Name</h3>
+                    <p id="userProfileDepartment">Department</p>
+                    <div class="dietary-tags" id="userDietaryTags"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Scanner Section -->
+        <section class="qr-container section">
+            <button id="scanButton" class="primary-btn" aria-label="Start scanning QR code to register meal">📷 Scan ID Card</button>
+            <button id="stopScanButton" class="warning-btn" style="display: none;" aria-label="Stop scanning QR code">✋ Stop Scan</button>
+            <div id="qr-scanner"></div>
+            <div id="scanStatus" class="status-message" role="status" aria-live="polite"></div>
+            <div class="success-checkmark" id="successCheckmark">
+                <div class="check-icon"></div>
+            </div>
+            <div class="spinner" id="scannerSpinner" style="display: none;"></div>
+        </section>
+
+        <!-- User Controls -->
+        <div class="section">
+            <button id="fullscreenButton" aria-label="Toggle full-screen mode">🔲 Fullscreen</button>
+            <button id="logoutButton" class="danger-btn" aria-label="Logout from the system">🚪 Logout</button>
+        </div>
+        
+        <!-- Swipe hint for mobile -->
+        <div class="swipe-area" role="none"></div>
+    </div>
+
+    <!-- Admin Login -->
+    <div id="loginContainer" class="container">
+        <header>
+            <img src="uac.png" alt="Company Logo" class="logo"> 
+            <h1>Meal Tracker Authentication</h1>
+        </header>
+        <div class="section">
+            <form id="loginForm" aria-label="Login form">
+                <label for="username">Username:</label>
+                <input type="text" id="username" autofocus aria-label="Enter username">
+                <label for="password">Password:</label>
+                <input type="password" id="password" aria-label="Enter password">
+                <button type="submit" id="loginButton" class="primary-btn">🔑 Login</button>
+            </form>
+            <div id="loginError" class="error status-message" style="display: none;" role="alert"></div>
+            <div class="spinner" id="loginSpinner" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminContainer" class="container" style="display: none;">
+        <header>
+            <img src="uac.png" alt="Company Logo" class="logo"> 
+            <h1>Admin Dashboard</h1>
+        </header>
+        
+        <!-- Tab Navigation -->
+        <div class="tabs" role="tablist">
+            <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true" aria-controls="overview">Overview</button>
+            <button class="tab-btn" data-tab="reports" role="tab" aria-selected="false" aria-controls="reports">Reports</button>
+            <button class="tab-btn" data-tab="userManagement" role="tab" aria-selected="false" aria-controls="userManagement">User Management</button>
+            <button class="tab-btn" data-tab="qrGenerator" role="tab" aria-selected="false" aria-controls="qrGenerator">QR Generator</button>
+            <button class="tab-btn" data-tab="settings" role="tab" aria-selected="false" aria-controls="settings">Settings</button>
+        </div>
+        
+        <!-- Swipe hint for mobile -->
+        <div class="swipe-area" role="none" aria-hidden="true"></div>
+        
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="count-display" role="region" aria-label="Attendance statistics">
+                <p>Total Meals Recorded Today</p>
+                <span class="count-number" id="adminAttendanceCount">0</span>
+                <p><strong>Date:</strong> <span id="adminCurrentDate"></span></p>
+            </div>
+            
+            <div class="dashboard-panel">
+                <div class="panel-card">
+                    <h3>Current Status</h3>
+                    <p id="systemStatus">System Active</p>
+                    <p><strong>Last Scan:</strong> <span id="lastScanTime">N/A</span></p>
+                </div>
+                <div class="panel-card">
+                    <h3>Quick Stats</h3>
+                    <p><strong>Today:</strong> <span id="todayCount">0</span> meals</p>
+                    <p><strong>This Week:</strong> <span id="weekCount">0</span> meals</p>
+                    <p><strong>This Month:</strong> <span id="monthCount">0</span> meals</p>
+                </div>
+            </div>
+            
+            
+            <div class="section">
+                <h3>Actions</h3>
+                <button id="downloadTodayCSV" class="primary-btn" aria-label="Download today's data as CSV">📥 Download Today's Data</button>
+                <button id="resetTodayButton" class="danger-btn" aria-label="Reset today's attendance count">🔄 Reset Today's Count</button>
+                <button id="adminLogoutButton" class="warning-btn" aria-label="Logout from admin panel">🚪 Logout</button>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content" role="tabpanel" aria-labelledby="reports-tab">
+            <h2>Meal Attendance Reports</h2>
+            
+            <div class="section">
+                <h3>Date Selection</h3>
+                <div class="date-selector">
+                    <div>
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate" aria-label="Select start date">
+                    </div>
+                    <div>
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate" aria-label="Select end date">
+                    </div>
+                </div>
+                <button id="generateReport" class="primary-btn" aria-label="Generate report">Generate Report</button>
+                <div class="spinner" id="reportSpinner" style="display: none;"></div>
+            </div>
+            
+            <div class="section">
+                <h3>Report Results</h3>
+                <div id="reportResults" aria-live="polite">
+                    <p>Select a date range and generate a report to see results.</p>
+                </div>
+                <div class="chart-container" id="reportChart" style="display: none;"></div>
+                <button id="downloadReportCSV" class="primary-btn" style="display: none;" aria-label="Download report as CSV">📥 Download Report CSV</button>
+            </div>
+        </div>
+        
+        <!-- User Management Tab (New) -->
+        <div id="userManagement" class="tab-content" role="tabpanel" aria-labelledby="userManagement-tab">
+            <h2>User Management</h2>
+            
+            <div class="section">
+                <h3>Add New User</h3>
+                <form id="addUserForm">
+                    <div class="form-row">
+                        <div>
+                            <label for="newUserName">Full Name:</label>
+                            <input type="text" id="newUserName" required aria-label="Enter user full name">
+                        </div>
+                        <div>
+                            <label for="newUserDepartment">Department:</label>
+                            <select id="newUserDepartment" required aria-label="Select user department">
+                                <option value="">Select Department</option>
+                                <option value="Admin">Administration</option>
+                                <option value="IT">IT</option>
+                                <option value="HR">Human Resources</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Sales">Sales</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div>
+                            <label for="newUserID">Staff ID:</label>
+                            <input type="text" id="newUserID" required aria-label="Enter user staff ID">
+                        </div>
+                        <div>
+                            <label for="newUserRole">Role:</label>
+                            <select id="newUserRole" required aria-label="Select user role">
+                                <option value="staff">Staff</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div>
+                            <label for="newUserEmail">Email:</label>
+                            <input type="email" id="newUserEmail" required aria-label="Enter user email">
+                        </div>
+                        <div>
+                            <label for="newUserPassword">Password:</label>
+                            <input type="password" id="newUserPassword" required aria-label="Enter user password">
+                        </div>
+                    </div>
+                    
+                    <label>Dietary Preferences:</label>
+                    <div class="dietary-checkboxes">
+                        <label><input type="checkbox" name="dietary" value="vegetarian"> Vegetarian</label>
+                        <label><input type="checkbox" name="dietary" value="vegan"> Vegan</label>
+                        <label><input type="checkbox" name="dietary" value="glutenFree"> Gluten Free</label>
+                        <label><input type="checkbox" name="dietary" value="nutFree"> Nut Free</label>
+                        <label><input type="checkbox" name="dietary" value="dairyFree"> Dairy Free</label>
+                    </div>
+                    
+                    <button type="submit" id="addUserButton" class="primary-btn">Add User</button>
+                </form>
+                <div class="spinner" id="addUserSpinner" style="display: none;"></div>
+            </div>
+            
+            <div class="section">
+                <h3>User List</h3>
+                <input type="text" id="userSearch" placeholder="Search users..." aria-label="Search users">
+                <div class="table-container">
+                    <table class="user-table" id="userTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Staff ID</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- User rows will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="userPagination">
+                    <button id="prevUsersPage" disabled>Previous</button>
+                    <span id="userPageInfo">Page 1</span>
+                    <button id="nextUsersPage">Next</button>
+                </div>
+            </div>
+        </div>
+        
+           
+        <!-- QR Generator Tab -->
+        <div id="qrGenerator" class="tab-content">
+            <h2>Staff QR Code Generator</h2>
+            
+            <div class="section">
+                <h3>Generate New QR Codes</h3>
+                <div>
+                    <label for="qrPrefix">QR Code Prefix:</label>
+                    <input type="text" id="qrPrefix" value="UAC" readonly>
+                    
+                    <label for="startNumber">Start Number:</label>
+                    <input type="number" id="startNumber" min="100000" max="999999" value="100000">
+                    
+                    <label for="qrCount">Number of QR Codes (max 500):</label>
+                    <input type="number" id="qrCount" min="1" max="500" value="10">
+                    
+                    <button id="generateQRCodes" class="primary-btn">Generate QR Codes</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Generated QR Codes</h3>
+                <div id="qrCodesContainer" class="qr-codes-grid"></div>
+                <button id="downloadQRZip" class="primary-btn" style="display: none;">📥 Download All QR Codes (ZIP)</button>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <h2>System Settings</h2>
+            
+            <div class="section">
+                <h3>Notification Settings</h3>
+                <div>
+                    <label for="enableNotifications">
+                        <input type="checkbox" id="enableNotifications" checked>
+                        Enable End-of-Day Notifications
+                    </label>
+                    
+                    <label for="notificationTime">Notification Time:</label>
+                    <input type="time" id="notificationTime" value="23:59">
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Data Management</h3>
+                <button id="exportAllData" class="primary-btn">Export All Data</button>
+                <button id="clearAllData" class="danger-btn">Clear All Data</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- End of Day Notification Modal -->
+    <div id="eodNotification" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeEodModal">&times;</span>
+            <h2>End of Day Summary</h2>
+            <p>Total meals recorded today: <strong id="eodMealCount">0</strong></p>
+            <p>Date: <span id="eodDate"></span></p>
+            <p>Would you like to download today's attendance data?</p>
+            <button id="eodDownloadBtn" class="primary-btn">Yes, Download CSV</button>
+            <button id="eodSkipBtn" class="warning-btn">No, Skip for Now</button>
+        </div>
+    </div>
+    
+    <!-- QR Code Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+    
+    <!-- JSZip Library for downloading multiple QR codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+</body>
+</html>
