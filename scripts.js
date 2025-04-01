@@ -1,15 +1,18 @@
 /**
- * Meal Attendance Tracker - Version 2.0
+ * Meal Attendance Tracker - Version 3.0
  * Updated with new features including:
  * - Admin/User role separation
  * - Date-based reporting
  * - QR code generation
  * - End-of-day notifications
  * - Responsive design
+ * - Visual confirmation animations
+ * - QR code database validation
  */
 
 // Global Variables
 let attendanceRecords = [];
+let qrCodesDatabase = [];
 let currentReport = [];
 let scanner = null;
 let notificationTimer = null;
@@ -17,6 +20,7 @@ let notificationTimer = null;
 // Initialize Application
 document.addEventListener("DOMContentLoaded", function() {
     loadAttendanceData();
+    loadQRCodeDatabase();
     setupEventListeners();
     setupTabNavigation();
     updateTime();
@@ -33,6 +37,19 @@ function loadAttendanceData() {
         attendanceRecords = JSON.parse(storedData);
     }
     updateAttendanceCounts();
+}
+
+// Load QR Code Database from localStorage
+function loadQRCodeDatabase() {
+    const storedQRCodes = localStorage.getItem("qrCodesDatabase");
+    if (storedQRCodes) {
+        qrCodesDatabase = JSON.parse(storedQRCodes);
+    }
+}
+
+// Save QR Code Database to localStorage
+function saveQRCodeDatabase() {
+    localStorage.setItem("qrCodesDatabase", JSON.stringify(qrCodesDatabase));
 }
 
 // Setup Event Listeners
@@ -256,6 +273,15 @@ function handleSuccessfulScan(scannedText) {
     if (!scannedText.startsWith("UAC")) {
         showScanStatus("Invalid QR Code format! ID must start with UAC.", "error");
         playSound("error");
+        showVisualFeedback("error");
+        return;
+    }
+    
+    // Check if scanned QR code exists in database
+    if (!isQRCodeInDatabase(scannedText)) {
+        showScanStatus(`Invalid QR Code: ${scannedText} not found in database!`, "error");
+        playSound("error");
+        showVisualFeedback("error");
         return;
     }
     
@@ -271,6 +297,7 @@ function handleSuccessfulScan(scannedText) {
     if (alreadyScannedToday) {
         showScanStatus(`ID ${scannedText} has already been recorded today!`, "warning");
         playSound("error");
+        showVisualFeedback("warning");
         return;
     }
     
@@ -286,7 +313,13 @@ function handleSuccessfulScan(scannedText) {
     // Update UI
     showScanStatus(`Success! ID ${scannedText} has been registered.`, "success");
     playSound("success");
+    showVisualFeedback("success");
     updateAttendanceCounts();
+}
+
+// Check if QR code exists in database
+function isQRCodeInDatabase(qrCode) {
+    return qrCodesDatabase.includes(qrCode);
 }
 
 // Show scan status message
@@ -295,11 +328,55 @@ function showScanStatus(message, type) {
     statusEl.textContent = message;
     statusEl.className = "status-message " + type;
     
-    // Auto-hide after 3 seconds
+    // Auto-hide after 5 seconds
     setTimeout(() => {
         statusEl.textContent = "";
         statusEl.className = "status-message";
     }, 5000);
+}
+
+// Show visual feedback animation
+function showVisualFeedback(type) {
+    // Create overlay element for animation
+    const overlay = document.createElement("div");
+    overlay.className = `feedback-overlay ${type}`;
+    document.body.appendChild(overlay);
+    
+    // Create icon element
+    const icon = document.createElement("div");
+    icon.className = `feedback-icon ${type}`;
+    
+    // Set icon content based on type
+    if (type === "success") {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" width="64" height="64">
+            <path fill="white" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
+        </svg>`;
+    } else if (type === "error") {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" width="64" height="64">
+            <path fill="white" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path>
+        </svg>`;
+    } else if (type === "warning") {
+        icon.innerHTML = `<svg viewBox="0 0 24 24" width="64" height="64">
+            <path fill="white" d="M12 2L1 21h22L12 2zm0 3.3L19.2 19H4.8L12 5.3z"></path>
+            <path fill="white" d="M11 10h2v5h-2z"></path>
+            <path fill="white" d="M11 16h2v2h-2z"></path>
+        </svg>`;
+    }
+    
+    overlay.appendChild(icon);
+    
+    // Animate the overlay
+    setTimeout(() => {
+        overlay.classList.add("visible");
+    }, 10);
+    
+    // Remove overlay after animation completes
+    setTimeout(() => {
+        overlay.classList.remove("visible");
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+        }, 300);
+    }, 1500);
 }
 
 // Play success or error sound
@@ -589,13 +666,79 @@ function generateQRCodes() {
     }
 }
 
+
+// Add QR codes to the database
+function addQRCodesToDatabase(codes) {
+    // Filter out any codes that are already in the database
+    const newCodes = codes.filter(code => !qrCodesDatabase.includes(code));
+    
+    // Add the new codes to the database
+    qrCodesDatabase = [...qrCodesDatabase, ...newCodes];
+    
+    // Save the updated database
+    saveQRCodeDatabase();
+    
+    // Show notification about added codes
+    if (newCodes.length > 0) {
+        const message = `${newCodes.length} new QR code${newCodes.length === 1 ? '' : 's'} added to database`;
+        const adminNotificationEl = document.getElementById("adminNotification");
+        if (adminNotificationEl) {
+            adminNotificationEl.textContent = message;
+            adminNotificationEl.style.display = "block";
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                adminNotificationEl.style.display = "none";
+            }, 5000);
+        }
+    }
+}
+
 // Download QR codes as ZIP file
 function downloadQRCodesAsZip() {
-    alert("This feature requires server-side processing. In this demo, please save QR codes individually.");
-    // In a real application, you would:
-    // 1. Capture each QR canvas as an image
-    // 2. Create a ZIP file using JSZip or similar library
-    // 3. Download the ZIP file
+
+    // Create a new ZIP file
+    const zip = new JSZip();
+    
+    // Get all QR code canvases
+    const qrCanvases = document.querySelectorAll('.qr-code-canvas'); // Adjust selector to match your QR code canvases
+    
+    if (qrCanvases.length === 0) {
+        alert("No QR codes found to download.");
+        return;
+    }
+    
+    // Add each QR code to the ZIP file
+    let counter = 0;
+    const totalQR = qrCanvases.length;
+    
+    qrCanvases.forEach((canvas, index) => {
+        // Convert canvas to blob
+        canvas.toBlob(function(blob) {
+            // Get the QR code data or use index as filename
+            const qrData = canvas.getAttribute('data-qr-value') || `qr-code-${index + 1}`;
+            
+            // Add file to zip with a clean filename (remove special characters)
+            const filename = `${qrData.replace(/[^a-z0-9]/gi, '-').substring(0, 20)}.png`;
+            zip.file(filename, blob);
+            
+            counter++;
+            
+            // When all QR codes are processed, generate and download the ZIP
+            if (counter === totalQR) {
+                zip.generateAsync({type: "blob"})
+                    .then(function(content) {
+                        // Download the ZIP file
+                        saveAs(content, "qr-codes.zip");
+                    });
+            }
+        }, 'image/png');
+    });
+    
+    // Show a loading message if there are many QR codes
+    if (totalQR > 10) {
+        alert(`Preparing ${totalQR} QR codes for download. This may take a moment...`);
+    }
 }
 
 // Export all data (admin function)
@@ -605,12 +748,16 @@ function exportAllData() {
         return;
     }
     
-    const dataStr = JSON.stringify(attendanceRecords, null, 2);
+    const dataStr = JSON.stringify({
+        attendanceRecords: attendanceRecords,
+        qrCodesDatabase: qrCodesDatabase
+    }, null, 2);
+    
     const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
     
     const exportLink = document.createElement("a");
     exportLink.setAttribute("href", dataUri);
-    exportLink.setAttribute("download", `attendance_all_data_${new Date().toISOString().split('T')[0]}.json`);
+    exportLink.setAttribute("download", `meal_tracker_data_${new Date().toISOString().split('T')[0]}.json`);
     document.body.appendChild(exportLink);
     exportLink.click();
     document.body.removeChild(exportLink);
@@ -627,10 +774,19 @@ function clearAllData() {
         return;
     }
     
+    // Prompt for database reset
+    const resetDatabase = confirm("Do you also want to clear the QR code database?");
+    
     attendanceRecords = [];
     saveAttendanceData();
+    
+    if (resetDatabase) {
+        qrCodesDatabase = [];
+        saveQRCodeDatabase();
+    }
+    
     updateAttendanceCounts();
-    alert("All data has been cleared");
+    alert("All data has been cleared" + (resetDatabase ? " including the QR code database" : ""));
 }
 
 // Setup End-of-Day Notifications
