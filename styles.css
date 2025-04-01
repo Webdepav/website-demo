@@ -559,3 +559,304 @@ button:disabled {
     z-index: 5;
     pointer-events: none;
 }
+/* Add these CSS rules to your styles.css file */
+
+/* Success Checkmark Animation */
+.success-checkmark {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    box-sizing: content-box;
+    padding: 10px;
+    z-index: 10;
+}
+
+.success-checkmark.animate {
+    animation: scaleIn 0.3s ease-in-out 0.9s forwards;
+}
+
+.check-icon {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    border-radius: 50%;
+    box-sizing: content-box;
+    background-color: #4CAF50;
+}
+
+.check-icon::before {
+    top: 48px;
+    left: 25px;
+    width: 25px;
+    transform: rotate(45deg);
+    animation: longSuccessTick 0.75s ease;
+}
+
+.check-icon::after {
+    top: 39px;
+    left: 17px;
+    width: 15px;
+    transform: rotate(135deg);
+    animation: shortSuccessTick 0.75s ease;
+}
+
+.check-icon::before,
+.check-icon::after {
+    content: '';
+    height: 5px;
+    background-color: #fff;
+    position: absolute;
+    border-radius: 2px;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes longSuccessTick {
+    0% {
+        width: 0;
+        right: 46px;
+        top: 54px;
+    }
+    65% {
+        width: 0;
+        right: 46px;
+        top: 54px;
+    }
+    84% {
+        width: 25px;
+        right: 0px;
+        top: 48px;
+    }
+    100% {
+        width: 25px;
+        right: 0px;
+        top: 48px;
+    }
+}
+
+@keyframes shortSuccessTick {
+    0% {
+        width: 0;
+        left: 17px;
+        top: 39px;
+    }
+    54% {
+        width: 0;
+        left: 17px;
+        top: 39px;
+    }
+    70% {
+        width: 15px;
+        left: 17px;
+        top: 39px;
+    }
+    84% {
+        width: 15px;
+        left: 17px;
+        top: 39px;
+    }
+    100% {
+        width: 15px;
+        left: 17px;
+        top: 39px;
+    }
+}
+
+/* General form styling improvements */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-row > div {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* User profile section */
+.user-profile {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.profile-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    border: 2px solid #fff;
+}
+
+.profile-info h3 {
+    margin: 0 0 0.25rem 0;
+}
+
+.profile-info p {
+    margin: 0 0 0.5rem 0;
+    opacity: 0.8;
+}
+
+.dietary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.dietary-tag {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+/* Table actions buttons */
+.action-btn {
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    margin-right: 0.25rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.edit-btn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+/* Visual Feedback Animation Styles */
+.feedback-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+    z-index: 9999;
+    transition: background-color 0.3s ease;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .feedback-overlay.visible {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+  .feedback-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .feedback-overlay.visible .feedback-icon {
+    transform: scale(1);
+  }
+  
+  /* Success feedback styles */
+  .feedback-icon.success {
+    background-color: #4CAF50;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+  }
+  .feedback-icon.success:after {
+    content: "";
+    width: 40px;
+    height: 20px;
+    border: solid #fff;
+    border-width: 0 0 5px 5px;
+    transform: rotate(-45deg);
+    margin-top: -5px;
+  }
+  
+  /* Error feedback styles */
+  .feedback-icon.error {
+    background-color: #F44336;
+    box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+  }
+  .feedback-icon.error:before,
+  .feedback-icon.error:after {
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 50px;
+    background-color: #fff;
+  }
+  .feedback-icon.error:before {
+    transform: rotate(45deg);
+  }
+  .feedback-icon.error:after {
+    transform: rotate(-45deg);
+  }
+  
+  /* Warning feedback styles */
+  .feedback-icon.warning {
+    background-color: #FFC107;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+  }
+  .feedback-icon.warning:before {
+    content: "!";
+    font-size: 70px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1;
+  }
+  
+  /* Animation timing */
+  .feedback-overlay.auto-hide {
+    animation: fadeOut 1s ease 2s forwards;
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  /* Optional text message styles */
+  .feedback-message {
+    position: absolute;
+    bottom: 30%;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease 0.2s;
+  }
+  .feedback-overlay.visible .feedback-message {
+    transform: translateY(0);
+    opacity: 1;
+  }
